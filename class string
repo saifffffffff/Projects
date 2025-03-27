@@ -1,0 +1,520 @@
+class String {
+
+private:
+	
+	char* _StrCopy(const char* Source, size_t NewBytes = 0) {
+		
+		if (Source == nullptr) {
+			char* Destination = new char[1];
+			Destination[0] = '\0';
+			return Destination;
+		}
+		
+		size_t SourceLength = _StrLen(Source);
+		
+		char* Destination = new char[SourceLength + 1 + NewBytes];
+		
+		for (size_t i = 0; i < SourceLength; i++) {
+			Destination[i] = Source[i];
+		}
+
+		Destination[SourceLength] = '\0';
+
+		return Destination;
+
+	}
+	size_t _StrLen(const char* Text) {
+		int counter = 0;
+		while (true) {
+			if (*(Text + counter) == '\0')
+				return counter;
+			counter++;
+		}
+	}
+
+	size_t _length;
+	char * _str;
+	
+
+public:
+	static const size_t NotFound = -1;
+
+	//default constructor
+	String()  {
+		_str = new char[1];
+		_str[0] = '\0';
+		_length = 0;
+	}
+	//conversion constructor
+	String(const char * text) {
+		_str = _StrCopy(text);
+		_length = _StrLen(_str);
+	}
+	// copy constructor (deep copy)
+	String(const String& other) : _str(_StrCopy(other._str)), _length(other._length) {}
+	String& operator=(const String& Obj) {
+		if (this == &Obj) return *this;
+
+		char* new_str = _StrCopy(Obj._str);
+		delete[] _str;
+		_str = new_str;
+
+		_length = Obj._length;
+		
+		return *this;
+	}
+	// destructor
+	~String() {
+		delete[] _str;
+	}
+	void operator += (String StringToAppend) {
+		this->append(StringToAppend);
+	}
+	void operator += (const char ChToAdd) {
+		this->append(ChToAdd);
+	}
+	char& operator [] (const size_t Index){
+		return _str[Index];
+	}
+	
+	//static members
+	static bool isUpper(char c) {
+		return (c >= 'A' && c <= 'Z');
+	}
+	static bool isLower(char c) {
+		return (c >= 'a' && c <= 'z');
+	}
+	static bool isPunct(char c) {
+		if ((33 <= c && c <= 47) || (58 <= c && c <= 64) || (123 <= c && c <= 126))
+			return true;
+		return false;
+	}
+	static char toLower(char c) {
+		return isUpper(c) ? c + 32 : c;
+	}
+	static char toUpper(char c) {
+		return isLower(c) ? c - 32 : c;
+	}
+	static char convertCase(char c) {
+		return isUpper(c) ? toLower(c) : toUpper(c);
+	}
+	static bool isVowel(char c) {
+		char cSmall = toLower(c);
+		return (cSmall == 'a' || cSmall == 'o' || cSmall == 'i' || cSmall == 'u' || cSmall == 'e');
+	}
+	static String join(vector <String>& vString, String delimiter = " ") {
+		String SubStr = "";
+		for (const String& str : vString) {
+			SubStr += str;
+			SubStr += delimiter;
+		}
+		
+		size_t i = SubStr.len() - delimiter.len();
+		
+		SubStr = SubStr.substr(0, i);
+		
+		return SubStr;
+	}
+	
+	//methods
+	int len() {
+		return _StrLen(_str);
+	}
+	char at(size_t index) {
+		if (index < _length) {
+			return _str[index];
+		}
+		else {
+			throw runtime_error("out of range");
+		}
+		
+	}
+	char back() {
+		return _str[_length - 1];
+	}
+	String substr(const size_t FromIndex, size_t Count = -1) {
+		if (FromIndex >= _length) {
+			throw runtime_error("FromIndex out of range");
+		}
+		if (Count == -1 || Count > _length) {
+			Count = _length;
+		}
+		if (FromIndex > Count) {
+			throw runtime_error("FromIndex > ToIndex");
+		}
+
+		size_t subLen = Count - FromIndex;
+		char* subStr = new char[subLen + 1]; // +1 for null terminator
+
+		for (size_t i = 0; i < subLen; i++) {
+			subStr[i] = _str[FromIndex + i];
+		}
+		subStr[subLen] = '\0';
+
+		String result(subStr);
+		delete[] subStr;
+		return result;
+	}
+	void pop_back() {
+		_str[--_length] = '\0';
+	}
+	
+	void append(String StrnigToAppend) {
+		size_t LenOfNewStr = _length + StrnigToAppend._length;
+
+	
+		char * NewStr = _StrCopy(_str, StrnigToAppend._length);
+		
+		// adding the new string
+		for (size_t i = _length; i < LenOfNewStr; i++)
+			NewStr[i] = StrnigToAppend[i - _length];
+		// adding the null terminator
+		NewStr[LenOfNewStr] = '\0';
+		
+		//refresh the _str + _length members
+		delete[] _str;
+		_str = NewStr;
+		_length += StrnigToAppend._length;
+		
+	}
+	void append(char Ch) {
+
+		
+		
+		char * NewStr = _StrCopy(_str,1);
+		
+		NewStr[_length] = Ch;
+		NewStr[_length + 1] = '\0';
+
+		delete[] _str;
+		_str = NewStr;
+		_length++;
+
+	}
+
+	void clear() {
+		delete []_str;
+		_str = new char[1];
+		_str[0] = '\0';
+		_length = 0;
+	}
+	bool isEmpty() {
+		return _length == 0;
+	}
+	void swap(String& StringToSwap) {
+		
+		String temp = StringToSwap;
+		
+		StringToSwap._str = _StrCopy(this->_str);
+		StringToSwap._length = this->_length;
+		
+		this->_str = _StrCopy(temp._str);
+		this->_length = temp._length;
+	}
+	char front() {
+		return _str[0];
+	}
+	bool compare(const String & StringToCompare) {
+		if (_length != StringToCompare._length)
+			return false;
+		for (size_t i = 0; i < _length; i++) {
+			if (StringToCompare._str[i] != this->_str[i])
+				return false;
+		}
+		return true;
+	}
+
+	size_t find(const char CharToFind, size_t FromIndex = 0) {
+		for (size_t i = FromIndex; i < _length; i++)
+			if (_str[i] == CharToFind)
+				return i;
+		return NotFound;
+	}
+	size_t find(String StringToFind, size_t FromIndex = 0) {
+		
+		if (StringToFind._length > this->_length)
+			return NotFound;
+
+		for (size_t i = FromIndex; i < _length; i++) {
+			if (StringToFind.at(0) == this->at(i)) {
+				if (StringToFind.compare(this->substr(i, StringToFind._length + i)))
+					return i;
+			}
+		}
+		return NotFound;
+	}
+
+	size_t count(const char& Ch, size_t FromIndex = 0) {
+		size_t counter = 0;
+		for (size_t i = FromIndex ; i < _length ; i++) {
+			if (_str[i] == Ch)
+				counter++;
+		}
+		return counter;
+	}
+	size_t count(String StringToCount, size_t FromIndex = 0) {
+		size_t counter = 0, pos;
+		String SubStr(*this);
+
+		while ((pos = SubStr.find(StringToCount, FromIndex)) != NotFound) {
+			counter++;
+			SubStr = SubStr.erase(pos, StringToCount._length);
+		}
+		return counter;
+	}
+	
+	vector <String > split(String delimiter = " ") {
+		vector <String> vString;
+		String SubStr = *this;
+		
+		size_t pos, LenOfDel = delimiter.len();
+		
+		while (( pos = SubStr.find(delimiter)) != NotFound) {
+			vString.push_back(SubStr.substr(0,pos));
+			SubStr = SubStr.substr(pos + LenOfDel);
+		}
+		vString.push_back(SubStr);
+		return vString;
+	}
+
+	String erase(size_t KeepToIndex) {
+		*this = this->substr(0,KeepToIndex);
+		return *this;
+	}
+	String erase(size_t FromIndex , size_t Count ) {
+		String TempStr;
+		try
+		{
+			TempStr = this->substr(0, FromIndex);
+			TempStr += this->substr(FromIndex + Count);
+		}
+		catch (...) {}
+		
+		return TempStr;
+	}
+
+	const char* data() {
+		return _str;
+	}
+	String clean() {
+		
+
+		if (this->len() == 1)
+			return *this;
+		
+		String NewString = *this;
+		size_t f = 0, s = 1, len = _length;
+		
+		
+		
+		for (;;)
+		{
+			while (NewString.at(f) == NewString.at(s)) {
+				NewString = NewString.erase(s, 1);
+				len--;
+				if (s == len)
+					break;
+			}
+
+			f++;
+			s++;
+
+			if (s >= len)
+				break;
+		}
+
+		return NewString;
+	}
+	String remove(String word) {
+		size_t pos = 0;
+		
+		String temp = *this;
+		
+		while ((pos = this->find(word)) != String::NotFound) {
+			*this = this->erase(pos, word.len() );
+		}
+		this->swap(temp);
+		return temp;
+
+		//if (text.find(word) == string::npos ) return;
+		//
+		//text.erase(text.find(word) , word.size() + 1);
+		//
+		//RemoveWordFromString(text, word);
+	}
+	void printFirstLetterFromEachWord() {
+
+		bool isFirstLetter = true;
+		for (size_t i = 0; i < _length ; i++)
+		{
+			if (this->at(i) != ' ' && isFirstLetter)
+				cout <<this->at(i) << " ";
+			isFirstLetter = (this->at(i) == ' ');
+		}
+	}
+	void swapWord(String OldWord, String NewWord) {
+		size_t pos;
+		while ((pos = this->find(OldWord)) != String::NotFound ) {
+			*this = this->erase(pos, _StrLen(OldWord._str));
+			*this = this->insert(NewWord, pos);
+		}
+	
+	}
+	String insert(String word,size_t insertionIndex) {
+		String NewStr = this->substr(0, insertionIndex );
+		NewStr.append(word);
+		NewStr.append(this->substr(insertionIndex));
+		return NewStr;
+	}
+	String upperFirstLetterInEachWord() {
+		String TempStr = *this;
+		bool IsFirstLetter = true;
+		for (short i = 0; i < _length; i++) {
+			if (IsFirstLetter && TempStr.at(i) != ' ') {
+				TempStr[i] = toUpper(TempStr.at(i));
+				IsFirstLetter = false;
+			}
+			if (TempStr.at(i) == ' ')
+				IsFirstLetter = true;
+		}
+		return TempStr;
+	}
+	String LowerFirstLetterInEachWord() {
+		String TempStr = *this;
+		bool IsFirstLetter = true;
+		for (short i = 0; i < _length; i++) {
+			if (IsFirstLetter && TempStr.at(i) != ' ') {
+				TempStr[i] = toLower(TempStr.at(i));
+				IsFirstLetter = false;
+			}
+			if (TempStr.at(i) == ' ')
+				IsFirstLetter = true;
+		}
+		return TempStr;
+	}
+	String toupper() {
+		String temp = *this;
+		for (short i = 0; i < _length; i++)
+		{
+			temp[i] = toUpper(temp[i]);
+		}
+		return temp;
+	}
+	String tolower() {
+		String temp = *this;
+		for (short i = 0; i < _length; i++)
+		{
+			temp[i] = toLower(temp[i]);
+		}
+		return temp;
+	}
+	String convertAllStringCase() {
+		String temp = *this;
+		for (int i = 0; i < _length; i++) {
+			temp[i] = convertCase(temp[i]);
+		}
+		return temp;
+	}
+	size_t countCapitalLetters() {
+		size_t counter = 0;
+		for (int i = 0; i < _length ; i++)
+			if (isUpper(this->at(i)))
+				counter++;
+		return counter;
+	}
+	size_t countSmallLetters() {
+		size_t counter = 0;
+		for (int i = 0; i < _length; i++)
+			if (isLower(this->at(i)))
+				counter++;
+		return counter;
+	}
+	size_t countVowels() {
+		size_t counter = 0;
+		for (size_t i = 0; _length; i++)
+			if (isVowel(this->_str[i]))
+				counter++;
+		return counter;
+	}
+	void printVowels() {
+		for (size_t i = 0; i < _length; i++)
+			if (isVowel(_str[i]))
+				cout << _str[i] << " ";
+	}
+	void printEachWordInString(String delimiter = " ") {
+		vector <String> SplitedStr = this->split(delimiter);
+		for (const String& str : SplitedStr) {
+			cout << str << endl;
+		}
+	}
+	size_t countWords() {
+		return count(' ') + 1;
+	}
+	String trimLeft() {
+		
+		if (this->at(0) != ' ')
+			return *this;
+
+		for (size_t i = 0; i < _length; i++) {
+			if (this->at(i) != ' ')
+				return this->substr(i);
+		}
+	}
+	String trimRight() {
+
+		for (size_t i = _length - 1 ; i >= 0 ; i--) {
+			if (this->at(i) != ' ')
+				return this->substr(0, i + 1);
+		}
+	}
+	String trim() {
+		String SubStr;
+		SubStr = this->trimRight();
+		SubStr = SubStr.trimLeft();
+		return SubStr;
+	}
+	String reverse() {
+
+		
+		String SubStr = "";
+		vector <String > vString = this->split();
+
+		vector<String >::iterator iter = vString.end();
+
+		while (iter != vString.begin()) {
+			iter--;
+			SubStr += *iter;
+			SubStr += " ";
+		}
+
+		return	SubStr.trimRight();
+
+	}
+	String removePunctuatoins() {
+		String SubStr = "";
+
+		for (size_t i = 0; i < _length; i++ ) {
+			char Ch = this->at(i);
+			if (!isPunct(Ch))
+			{
+				SubStr.append(Ch);
+			}
+		}
+		return SubStr;
+	}
+	friend ostream & operator << (ostream & out ,const String & str) {
+		
+		return out << str._str;
+
+	}
+	friend istream& operator >> (istream& in,String & str) {
+		char * TempStr = new char[2048];
+		cin >> TempStr;
+		str._str = str._StrCopy(TempStr);
+		str._length = str._StrLen(TempStr);
+		delete[] TempStr;
+		return in;
+	}
+
+};
+
